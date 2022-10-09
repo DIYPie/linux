@@ -529,6 +529,7 @@ static int bcm2835_i2c_probe(struct platform_device *pdev)
 	i2c_dev = devm_kzalloc(&pdev->dev, sizeof(*i2c_dev), GFP_KERNEL);
 	if (!i2c_dev)
 		return -ENOMEM;
+
 	platform_set_drvdata(pdev, i2c_dev);
 	i2c_dev->dev = &pdev->dev;
 	init_completion(&i2c_dev->completion);
@@ -605,6 +606,8 @@ static int bcm2835_i2c_probe(struct platform_device *pdev)
 	ret = i2c_add_adapter(adap);
 	if (ret)
 		goto err_free_irq;
+
+	dev_info(&pdev->dev, "Probed i2c driver\n");
 
 	return 0;
 

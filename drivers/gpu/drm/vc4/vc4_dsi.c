@@ -847,6 +847,8 @@ static bool vc4_dsi_bridge_mode_fixup(struct drm_bridge *bridge,
 	unsigned long pll_clock = pixel_clock_hz * dsi->divider;
 	int divider;
 
+	dev_info(&dsi->pdev->dev, "DSI PHY CLOCK %ld:\n", parent_rate);
+
 	/* Find what divider gets us a faster clock than the requested
 	 * pixel clock.
 	 */
@@ -868,6 +870,11 @@ static bool vc4_dsi_bridge_mode_fixup(struct drm_bridge *bridge,
 				mode->clock;
 	adjusted_mode->hsync_end += adjusted_mode->htotal - mode->htotal;
 	adjusted_mode->hsync_start += adjusted_mode->htotal - mode->htotal;
+
+	dev_info(&dsi->pdev->dev, "htotal: %u, hsync_end: %u, hsync_start: %u:\n", 
+								adjusted_mode->htotal,
+								adjusted_mode->hsync_end,
+								adjusted_mode->hsync_start);
 
 	return true;
 }

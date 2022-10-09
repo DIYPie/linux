@@ -1,0 +1,283 @@
+/dts-v1/;
+
+#include "bcm2710.dtsi"
+#include "bcm2709-rpi.dtsi"
+#include "bcm283x-rpi-csi1-2lane.dtsi"
+#include "bcm283x-rpi-i2c0mux_0_44.dtsi"
+#include "bcm2708-rpi-bt.dtsi"
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/pinctrl/bcm2835.h>
+
+/ {
+	compatible = "iocapa,diypie", "brcm,bcm2837";
+	model = "DIYPie";
+
+	chosen {
+		bootargs = "coherent_pool=1M 8250.nr_uarts=1";
+	};
+
+	aliases {
+		serial0 = &uart1;
+		serial1 = &uart0;
+	};
+
+	avdd_5v7_reg: fixedregulator_pos_5v7 {
+		compatible = "regulator-fixed";
+		regulator-name = "lcm_pos_bias";
+		regulator-min-microvolt = <5700000>;
+		regulator-max-microvolt = <5700000>;
+		gpio = <&gpio 24 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+
+	avee_5v7_reg: fixedregulator_neg_5v7 {
+		compatible = "regulator-fixed";
+		regulator-name = "lcm_neg_bias";
+		regulator-min-microvolt = <5700000>;
+		regulator-max-microvolt = <5700000>;
+		gpio = <&gpio 25 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+
+	vdd_1v8_reg: fixedregulator_1v8 {
+		compatible = "regulator-fixed";
+		regulator-always-on;
+		regulator-max-microvolt = <1800000>;
+		regulator-min-microvolt = <1800000>;
+		regulator-name = "1v8";
+	};
+};
+
+&gpio {
+	/*
+	 * This is based on the official GPU firmware DT blob.
+	 *
+	 * Legend:
+	 * "NC" = not connected (no rail from the SoC)
+	 * "FOO" = GPIO line named "FOO" on the schematic
+	 * "FOO_N" = GPIO line named "FOO" on schematic, active low
+	 */
+	gpio-line-names = "ID_SDA",
+			  "ID_SCL",
+			  "SDA1",
+			  "SCL1",
+			  "GPIO_GCLK",
+			  "GPIO5",
+			  "GPIO6",
+			  "SPI_CE1_N",
+			  "SPI_CE0_N",
+			  "SPI_MISO",
+			  "SPI_MOSI",
+			  "SPI_SCLK",
+			  "GPIO12",
+			  "GPIO13",
+			  /* Serial port */
+			  "TXD1",
+			  "RXD1",
+			  "GPIO16",
+			  "GPIO17",
+			  "GPIO18",
+			  "GPIO19",
+			  "GPIO20",
+			  "GPIO21",
+			  "GPIO22",
+			  "GPIO23",
+			  "GPIO24",
+			  "GPIO25",
+			  "GPIO26",
+			  "GPIO27",
+			  "HDMI_HPD_N",
+			  "STATUS_LED_N",
+			  /* Used by BT module */
+			  "CTS0",
+			  "RTS0",
+			  "TXD0",
+			  "RXD0",
+			  /* Used by Wifi */
+			  "SD1_CLK",
+			  "SD1_CMD",
+			  "SD1_DATA0",
+			  "SD1_DATA1",
+			  "SD1_DATA2",
+			  "SD1_DATA3",
+			  "CAM_GPIO1", /* GPIO40 */
+			  "WL_ON", /* GPIO41 */
+			  "BT_ON", /* GPIO42 */
+			  "WIFI_CLK", /* GPIO43 */
+			  "SDA0", /* GPIO44 */
+			  "SCL0", /* GPIO45 */
+			  "SMPS_SCL", /* GPIO46 */
+			  "SMPS_SDA", /* GPIO47 */
+			  /* Used by SD Card */
+			  "SD_CLK_R",
+			  "SD_CMD_R",
+			  "SD_DATA0_R",
+			  "SD_DATA1_R",
+			  "SD_DATA2_R",
+			  "SD_DATA3_R";
+
+	spi0_pins: spi0_pins {
+		brcm,pins = <9 10 11>;
+		brcm,function = <4>; /* alt0 */
+	};
+
+	spi0_cs_pins: spi0_cs_pins {
+		brcm,pins = <8 7>;
+		brcm,function = <1>; /* output */
+	};
+
+	i2c0_pins: i2c0 {
+		brcm,pins = <0 1>;
+		brcm,function = <4>;
+	};
+
+	i2c1_pins: i2c1 {
+		brcm,pins = <2 3>;
+		brcm,function = <4>;
+	};
+
+	i2s_pins: i2s {
+		brcm,pins = <18 19 20 21>;
+		brcm,function = <4>; /* alt0 */
+	};
+
+	sdio_pins: sdio_pins {
+		brcm,pins =     <34 35 36 37 38 39>;
+		brcm,function = <7>; // alt3 = SD1
+		brcm,pull =     <0 2 2 2 2 2>;
+	};
+
+	uart0_pins: uart0_pins {
+		brcm,pins = <30 31 32 33>;
+		brcm,function = <7>; /* alt3=UART0 */
+		brcm,pull = <2 0 0 2>; /* up none none up */
+	};
+
+	uart1_pins: uart1_pins {
+		brcm,pins;
+		brcm,function;
+		brcm,pull;
+	};
+
+	reset_pins: reset_pins {
+		brcm,pins = <22>;
+		brcm,function = <BCM2835_FSEL_GPIO_OUT>;    /* out */
+		brcm,pull = <BCM2835_PUD_OFF>;              /* no pull */
+	};
+
+	bias_pins: bias_pins {
+		brcm,pins = <24 25>;
+		brcm,function = <BCM2835_FSEL_GPIO_OUT>;    /* out */
+		brcm,pull = <BCM2835_PUD_OFF>;              /* no pull */
+	};
+};
+
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart0_pins>;
+	status = "okay";
+};
+
+&uart1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart1_pins>;
+	status = "okay";
+};
+
+&i2c0if {
+	clock-frequency = <100000>;
+};
+
+&i2c1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c1_pins>;
+	clock-frequency = <100000>;
+};
+
+&i2c2 {
+	clock-frequency = <100000>;
+};
+
+&i2s {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2s_pins>;
+};
+
+&leds {
+	act_led: led-act {
+		label = "led0";
+		linux,default-trigger = "actpwr";
+		gpios = <&gpio 29 GPIO_ACTIVE_LOW>;
+	};
+};
+
+&fb {
+	status = "disabled";
+};
+
+&pixelvalve0 {
+	status = "okay";
+};
+
+&pixelvalve1 {
+	status = "okay";
+};
+
+&pixelvalve2 {
+	status = "okay";
+};
+
+&hvs {
+	status = "okay";
+};
+
+&v3d {
+	status = "okay";
+};
+
+&vc4 {
+	status = "okay";
+};
+
+&clocks {
+	claim-clocks = <
+		BCM2835_PLLD_DSI0
+		BCM2835_PLLD_DSI1
+		BCM2835_PLLH_AUX
+		BCM2835_PLLH_PIX
+	>;
+};
+
+&dsi1 {
+	status = "okay";
+
+	port {
+		dsi_out_port:endpoint {
+			remote-endpoint = <&panel_dsi_port>;
+		};
+	};
+
+	lpm035m407b:lpm035m407b@0 {
+		compatible    = "jdi,lpm035m407b-video";
+		status        = "okay";
+		reg           = <0>;
+		reset-gpios   = <&gpio 22 GPIO_ACTIVE_HIGH>;   /* reset */
+		vddi-supply   = <&vdd_1v8_reg>;
+		avdd-supply   = <&avdd_5v7_reg>;
+		avee-supply   = <&avee_5v7_reg>;
+		port {
+			panel_dsi_port: endpoint {
+				remote-endpoint = <&dsi_out_port>;
+			};
+		};
+	};
+};
+
+/ {
+	__overrides__ {
+		act_led_gpio = <&act_led>,"gpios:4";
+		act_led_activelow = <&act_led>,"gpios:8";
+		act_led_trigger = <&act_led>,"linux,default-trigger";
+	};
+};
